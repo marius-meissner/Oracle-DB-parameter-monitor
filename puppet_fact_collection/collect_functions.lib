@@ -1,0 +1,138 @@
+#!/bin/bash
+
+### Make TMP Dir ###########################
+# $1: Folder Name, DEFAULT: "noname"
+############################################
+function setup_tmp_dir (){
+        tmp_dir=/dev/shm/$1
+        rm -r $tmp_dir 2>/dev/null
+        mkdir $tmp_dir
+}
+
+### Cleanup ################################
+# No parameter required
+############################################
+function cleanup () {
+        rm -rf $tmp_dir
+}
+
+### Collect all oracle parameter ###########
+# Collect all oracle parameters as key=value
+# pairs saved to $tmp_dir/sql_output
+# $1 : SID of database
+############################################
+function collect_all_parameter () {
+
+connect_param=$1
+
+. /opt/tvd/Basenv/dba/bin/oraenv.ksh $connect_param 1>/dev/null 2>/dev/null
+
+sqlplus -silent / as sysdba <<EOF> $tmp_dir/sql_output
+set line 1200;
+set serveroutput on;
+set serveroutput on size 1000000;
+declare
+db_sid varchar2(10);
+db_status varchar2(15);
+query_result varchar2(1000);
+parameter__SGA_SIZE varchar2(15) := 'default';
+begin
+
+-- Collect instance SID
+select instance_name into db_sid from v\$instance ;
+
+-- Collect all oracle parameter
+FOR rec2 IN (select name, value from v\$parameter)LOOP
+  dbms_output.put_line
+('ora_'||db_sid||'_'||rec2.name||'='||rec2.value);
+END LOOP;
+
+-- Collect DB Status
+select status into db_status from v\$instance;
+dbms_output.put_line ('ora_'||db_sid||'_status='||db_status);
+
+-- Collect Characterset
+select value into query_result from v\$nls_parameters where parameter='NLS_CHARACTERSET';
+dbms_output.put_line ('ora_'||db_sid||'_NLS_CHARACTERSET='||query_result);
+
+
+-- Collect FRA usage
+select TO_CHAR(round(sum(PERCENT_SPACE_USED*value)/100,0)) into query_result from v\$recovery_area_usage,v\$parameter where name='db_recovery_file_dest_size';
+dbms_output.put_line ('ora_'||db_sid||'_used_fra_space='||query_result);
+
+
+-- Collect FRA reclaimable space
+select round(sum(PERCENT_SPACE_RECLAIMABLE*value/100),0) into
+query_result from v\$recovery_area_usage,v\$parameter where
+name='db_recovery_file_dest_size';
+dbms_output.put_line
+('ora_'||db_sid||'_reclaimable_fra_space='||query_result);
+
+
+ 
+
+-- Collect info about DATA_PUMP_DIR
+IF db_status = 'OPEN' THEN
+   execute immediate 'select directory_path from dba_directories where
+directory_name = ''DATA_PUMP_DIR''' into query_result;
+   dbms_output.put_line
+('ora_'||db_sid||'_data_pump_dir='||query_result);
+END IF;
+
+-- Collect info about __SGA_Size
+IF db_status = 'OPEN' THEN
+    execute immediate 'select value from dba_capture_parameters where
+parameter=''_SGA_SIZE''' into query_result;
+
+    IF query_result = 'default' THEN
+            dbms_output.put_line ('ora_'||db_sid||'__sga_size=30');
+        else
+            dbms_output.put_line
+('ora_'||db_sid||'__sga_size='||query_result);
+    END IF;
+    
+-- Collect info about __CHECKPOINT_FORCE
+   execute immediate 'select value from sys.streams\$_process_params
+where name=''_CHECKPOINT_FORCE''' into query_result;
+    dbms_output.put_line
+('ora_'||db_sid||'__CHECKPOINT_FORCE='||query_result);
+    
+    
+END IF;
+
+
+EXCEPTION
+    when NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No Data Found');
+
+end;
+/
+EOF
+
+# Collecting free space of DATA_PUMP_DIR
+current_data_pump_dir=$(cat $tmp_dir/sql_output | grep -i _data_pump_dir | grep -i ora_ | sed s/.*=//g)
+
+if [ "$current_data_pump_dir" != "" ]; then
+        cd $current_data_pump_dir
+        data_pump_dir_free_space=$(df -P . | awk 'NR==2 {print $4}')
+        echo "ora_"$connect_param"_data_pump_dir_free_space="$data_pump_dir_free_space
+fi
+
+} 
+
+### Get a list with all prod instances #####
+# Collect all prod dbs and saves them as a
+# list to $tmp_dir/prod_db_list
+############################################
+function generate_prod_db_list () {
+        cat /etc/oratab | grep -i ^p | sed s/:.*//g | sed s/$/' 'localhost/g > $tmp_dir/prod_db_list
+}
+
+function collect_system_parameter () {
+        set $(df /oradatabase/u30 | grep -i /oradatabase/u30)
+        echo "ora_system_fra-space=$1"
+        echo "ora_system_fra-used-space=$2"
+}
+
+
+

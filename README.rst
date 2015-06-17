@@ -58,3 +58,47 @@ Script for collection can be found in the folder puppet_fact_collection. One of 
 .. code-block:: bash
 
    */15 * * * * /u01/app/admindb/bin/collect_ora_parameter.sh > /etc/puppetlabs/facter/facts.d/oracle_facts.txt
+
+Cronjobs
+----------
+The tool has two scripts which need to be called regularly as cronjob.
+
+For authentication a token needs to be provieded on each call, which can be configured in /includes/templates/configuration.php.
+
+Cronjob for importing Fact changes:
+.. code-block:: bash
+
+   */30 * * * * wget -qO- <webserver>/collect_parameter/includes/windows/input.php?token=6vbxSuwqJme5N724dH18309 &> /dev/null
+
+Cronjob checking for notifications:
+.. code-block:: bash
+
+   25,55 * * * * wget -qO- <webserver>/collect_parameter/includes/windows/notification.php?token=6vbxSuwqJme5N724dH18309 &> /dev/null
+
+Authentication
+----------
+Authentication works per default through LDAP. In /includes/templates/configuration.php you can specify LDAP groups which are allowed to access the tool.
+
+You need also to specify a LDAP server, DN and uer domain.
+
+General Confgiuration
+----------
+The following settings are necessary and can be configured in /includes/templates/configuration.php on the webserver.
+
+URL to PuppetDB webservice:
+.. code-block:: php
+
+   $GLOBALS['config']['puppet_db_url'] = '';
+
+Prefix for Puppet facts, the tool works at the moment only if all your SIDs have the same beginning or all puppet facts starts with the same prefix. Per default ora_p is set:
+
+.. code-block:: php
+
+   $GLOBALS['config']['puppet_fact_db_prefix'] = 'ora_p';
+
+If you want to recieve mails on swithover/failover or critical FRA situation you have to configure mail addresses for that:
+.. code-block:: php
+
+   $GLOBALS['config']['fra_notification_mail'] = '';
+   $GLOBALS['config']['switchover_notification_mail'] = '';
+

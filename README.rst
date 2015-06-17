@@ -46,12 +46,10 @@ Puppet Fact definition
 Oracle database related facts should have the following naming convention:
 
 Database related facts:
-.. code-block:: bash
 
    ora_<database sid>_<parameter name>=<value>
 
 Server related facts:
-.. code-block:: bash
 
    ora_system_<parameter name>=<value>
 

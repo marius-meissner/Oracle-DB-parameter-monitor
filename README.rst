@@ -86,6 +86,7 @@ General Confgiuration
 The following settings are necessary and can be configured in /includes/templates/configuration.php on the webserver.
 
 URL to PuppetDB webservice:
+
 .. code-block:: php
 
    $GLOBALS['config']['puppet_db_url'] = '';
@@ -97,6 +98,7 @@ Prefix for Puppet facts, the tool works at the moment only if all your SIDs have
    $GLOBALS['config']['puppet_fact_db_prefix'] = 'ora_p';
 
 If you want to recieve mails on swithover/failover or critical FRA situation you have to configure mail addresses for that:
+
 .. code-block:: php
 
    $GLOBALS['config']['fra_notification_mail'] = '';

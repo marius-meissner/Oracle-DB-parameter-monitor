@@ -35,8 +35,28 @@ Download the folder 'oracle-parameter-monitor' and extract it to your webserver.
 Application database
 ----------
 The application supports at the moment of writing only MySQL/MariaDB 5. Please create here a new user/schema.
+
 For importing the defualt structure and data please execute first mysql_structure.sql (install folder), then mysql_settings.sql and mysql_parameter.sql.
+
 At last step please configure the database settings inside /includes/templates/configuration.php on the webserver
 
 
+Puppet Fact definition
+----------
+Oracle database related facts should have the following naming convention:
 
+Database related facts:
+.. code-block:: bash
+
+   ora_<database sid>_<parameter name>=<value>
+
+Server related facts:
+.. code-block:: bash
+
+   ora_system_<parameter name>=<value>
+
+Script for collection can be found in the folder puppet_fact_collection. One of the possiblities would be to configure the shell script as cronjob and pipe the stdout to a puppet watched definition file:
+
+.. code-block:: bash
+
+   */15 * * * * /u01/app/admindb/bin/collect_ora_parameter.sh > /etc/puppetlabs/facter/facts.d/oracle_facts.txt

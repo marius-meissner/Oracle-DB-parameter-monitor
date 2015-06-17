@@ -66,11 +66,13 @@ The tool has two scripts which need to be called regularly as cronjob.
 For authentication a token needs to be provieded on each call, which can be configured in /includes/templates/configuration.php.
 
 Cronjob for importing Fact changes:
+
 .. code-block:: bash
 
    */30 * * * * wget -qO- <webserver>/collect_parameter/includes/windows/input.php?token=6vbxSuwqJme5N724dH18309 &> /dev/null
 
 Cronjob checking for notifications:
+
 .. code-block:: bash
 
    25,55 * * * * wget -qO- <webserver>/collect_parameter/includes/windows/notification.php?token=6vbxSuwqJme5N724dH18309 &> /dev/null

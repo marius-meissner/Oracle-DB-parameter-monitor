@@ -24,7 +24,7 @@ Word of caution
 
 Oracle Parameter Monitor is at a very early step and there a many things witch still needs to be improved.
 
-The application should just give a first approch how Data from Oracle Database cann be visualised with the use of Puppet Facts.
+The application should just give a first approch how Data from Oracle Database can be visualised with the use of Puppet Facts.
 
 At the moment no framework, expect JQuery is used, therefore MVC and UI frameworks needs to be implemented. The projects needs also improvment on cronjob handling and support for other databases expect MySQL.
 

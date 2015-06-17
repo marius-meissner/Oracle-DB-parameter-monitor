@@ -36,7 +36,7 @@ Application database
 ----------
 The application supports at the moment of writing only MySQL/MariaDB 5. Please create here a new user/schema.
 For importing the defualt structure and data please execute first mysql_structure.sql (install folder), then mysql_settings.sql and mysql_parameter.sql.
-At last step please configure the database settinggs inside /includes/templates/configuration.php on the webserver
+At last step please configure the database settings inside /includes/templates/configuration.php on the webserver
 
 
 

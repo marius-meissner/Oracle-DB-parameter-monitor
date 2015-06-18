@@ -1,11 +1,9 @@
 <?php
 	error_reporting(E_ALL); ini_set('display_errors', '1');
 	
-	if ($_GET['token'] != $GLOBALS['config']['cronjob_token']) {echo "Permission denied!"; exit;}
-	
-	
 	session_start();
-    include("../templates/configuration.php");
+	include("../templates/configuration.php");
+	if ($_GET['token'] != $GLOBALS['config']['cronjob_token']) {echo "Permission denied!"; exit;}
 	$db = mysqli_connect($_SESSION['db_host'], $_SESSION['db_user'], $_SESSION['db_password'], $_SESSION['db_database']);
 	
 	# Check if another import is running in parallel
